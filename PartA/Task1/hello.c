@@ -2,9 +2,14 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
+MODULE_LICENSE("GPL");
+
+static char* who = NULL;
+module_param(who, charp, S_IRUGO);
+
 static int hello_init(void)
 {
-    printk(KERN_ALERT "Hello, world\n");
+    printk(KERN_ALERT "Hello, %s\n", who);
 
     return 0;
 }
