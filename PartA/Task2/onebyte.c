@@ -6,7 +6,7 @@
 #include <linux/types.h>
 #include <linux/fs.h>
 #include <linux/proc_fs.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #define MAJOR_NUMBER 61
 
@@ -38,6 +38,19 @@ int onebyte_release(struct inode *inode, struct file *filep)
 ssize_t onebyte_read(struct file* filep, char* buf, size_t count, loff_t* f_pos)
 {
     /*please complete the function on your own*/
+    ssize_t len = min(1 - *f_pos, count);
+
+    if(len <= 0)
+    {
+        return 0;
+    }
+    if(copy_to_user(buf, onebyte_data, len))
+    {
+        return -EFAULT;
+    }
+    *f_pos += len;
+
+    return len;
 }
 
 ssize_t onebyte_write(struct file* filep, const char* buf, size_t count, loff_t* f_pos)
@@ -50,7 +63,7 @@ static int onebyte_init(void)
     int result;
     // register the device
     result = register_chrdev(MAJOR_NUMBER, "onebyte", &onebyte_fops);
-    f (result < 0) 
+    if (result < 0) 
     {
         return result;
     }
@@ -63,8 +76,7 @@ static int onebyte_init(void)
     {
         onebyte_exit();
         // cannot allocate memory
-        // return no memory error, negative signify a
-        failure
+        // return no memory error, negative signify a failure
         return -ENOMEM;
     }
     // initialize the value to be X
